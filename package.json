@@ -6,7 +6,7 @@
   "type": "module",
   "packageManager": "pnpm@11.9.0",
   "scripts": {
-    "codegen": "envio codegen",
+    "codegen": "ENVIO_ETHEREUM_MAINNET_HYPERRPC_URL=https://1.rpc.hypersync.xyz/build-token ENVIO_ETHEREUM_MAINNET_LIVE_HEAD_RPC_URL=http://localhost:8545 ENVIO_ETHEREUM_MAINNET_LIVE_HEAD_WS_URL=ws://localhost:8546 envio codegen",
     "dev": "envio dev",
     "start": "envio start",
     "stop": "envio stop",
