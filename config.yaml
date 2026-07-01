@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+#
+# Polygon PoS checkpoint + validator indexer (Ethereum L1 / mainnet).
+# All contracts verified against the DEPLOYED implementations (see README):
+#   RootChain proxy    0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287
+#     impl             0x536c55cFe4892E581806e10b38dFE8083551bd03 (maticnetwork/contracts @ eef53596)
+#   StakingInfo (event logger, EMITS the staking events; NOT the StakeManager)
+#                      0xa59C847Bd5aC0172Ff4FE912C5d29E5A71A7512B
+name: polygon-checkpoint-indexer
+description: Polygon PoS checkpoints + validator signing attribution (L1 ecrecover)
+
+# Tier-2 needs the emitting transaction's calldata (submitCheckpoint(bytes,uint256[3][])).
+# HyperSync can serve transaction fields, so no RPC is required for this.
+field_selection:
+  transaction_fields:
+    - hash
+    - input
+
+chains:
+  - id: 1
+    # ~21 days / ~1000 checkpoints of backfill. Checkpoint 105648 lands at L1 block
+    # 25,439,723; head at build time ~25,439,970. See README "start_block rationale".
+    start_block: 25290000
+    contracts:
+      - name: RootChain
+        address:
+          - 0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287
+        handler: src/EventHandlers.ts
+        events:
+          - event: NewHeaderBlock(address indexed proposer, uint256 indexed headerBlockId, uint256 indexed reward, uint256 start, uint256 end, bytes32 root)
+
+      - name: StakingInfo
+        address:
+          - 0xa59C847Bd5aC0172Ff4FE912C5d29E5A71A7512B
+        handler: src/EventHandlers.ts
+        events:
+          - event: Staked(address indexed signer, uint256 indexed validatorId, uint256 nonce, uint256 indexed activationEpoch, uint256 amount, uint256 total, bytes signerPubkey)
+          - event: Unstaked(address indexed user, uint256 indexed validatorId, uint256 amount, uint256 total)
+          - event: StakeUpdate(uint256 indexed validatorId, uint256 indexed nonce, uint256 indexed newAmount)
+          - event: SignerChange(uint256 indexed validatorId, uint256 nonce, address indexed oldSigner, address indexed newSigner, bytes signerPubkey)
+          - event: Jailed(uint256 indexed validatorId, uint256 indexed exitEpoch, address indexed signer)
+          - event: UnJailed(uint256 indexed validatorId, address indexed signer)
+          - event: Slashed(uint256 indexed nonce, uint256 indexed amount)

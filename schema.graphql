@@ -1,0 +1,110 @@
+# =============================================================================
+# Polygon PoS checkpoint + validator schema
+#
+# Design goals (per the alert bridge that consumes this):
+#   * "latest checkpoint age"                -> CheckpointStats (singleton)
+#   * "is OUR validator jailed"              -> Validator (by validatorId) / Signer
+#   * "has OUR validator been signing"       -> Signer (by L1 signer address) — the
+#                                               robust, always-populated attribution
+#   * per-checkpoint signer set              -> CheckpointSignature
+#
+# Why signing lives on `Signer` (keyed by L1 address) as well as `Validator`:
+# ecrecover always yields the signer ADDRESS, but the validatorId only becomes
+# known if we observed the validator's Staked / SignerChange event inside the
+# indexed window. Validators that staked before start_block therefore have no
+# Validator row, yet their checkpoint signing is still fully tracked by Signer.
+# The alert bridge filters by our signer 0xea105ab4… (a query-time filter, exactly
+# as the spec intends), so this works at any start_block.
+# =============================================================================
+
+type Checkpoint {
+  id: ID!                       # checkpointNumber (headerBlockId / 10000) as string
+  checkpointNumber: BigInt!
+  headerBlockId: BigInt!
+  proposer: String!             # lowercase L1 address
+  startBlock: BigInt!           # Bor start block
+  endBlock: BigInt!             # Bor end block
+  root: String!                 # checkpoint root hash (bytes32)
+  reward: BigInt!
+  l1BlockNumber: BigInt!        # Ethereum block that included the checkpoint tx
+  l1Timestamp: BigInt!          # Ethereum block timestamp (unix seconds)
+  txHash: String!               # submitCheckpoint tx hash
+  signerCount: Int!             # number of validators recovered from the sig blob
+  signatures: [CheckpointSignature!]! @derivedFrom(field: "checkpoint")
+}
+
+# Singleton, id = "global". Cheap "latest checkpoint age" / stall detection.
+type CheckpointStats {
+  id: ID!
+  latestCheckpointNumber: BigInt!
+  latestTimestamp: BigInt!
+  latestProposer: String!
+  latestL1BlockNumber: BigInt!
+  totalCheckpoints: BigInt!
+}
+
+# Keyed by validatorId (Heimdall val_id). Staking/lifecycle state from StakingInfo.
+# Tier-2 signing fields are mirrored here when the signer->validatorId mapping is
+# known in-window; otherwise query the Signer entity (see note above).
+type Validator {
+  id: ID!                       # validatorId as string
+  validatorId: BigInt!
+  signer: String                # current L1 signer address (lowercase); null until observed
+  jailed: Boolean!
+  lastJailedTimestamp: BigInt
+  lastUnjailedTimestamp: BigInt
+  totalSlashes: Int!            # see README: per-validator slash attribution is NOT
+                                # available from L1 (StakingInfo.Slashed is aggregate)
+  currentStake: BigInt!
+  activationEpoch: BigInt
+  deactivationEpoch: BigInt
+  active: Boolean!
+  lastSignerChangeTimestamp: BigInt
+  # Tier-2 (mirrored from Signer when validatorId is resolvable)
+  lastCheckpointSignedNumber: BigInt
+  lastCheckpointSignedTimestamp: BigInt
+  checkpointsSigned: Int!
+  checkpointsMissed: Int!
+}
+
+# Keyed by the L1 signer address (lowercase). ALWAYS populated from ecrecover —
+# this is the authoritative per-validator checkpoint-signing record.
+type Signer {
+  id: ID!                       # lowercase L1 signer address
+  address: String!
+  validatorId: BigInt           # resolved from Staked / SignerChange when seen in-window
+  checkpointsSigned: Int!
+  checkpointsMissed: Int!       # heuristic; see README (ACTIVE_WINDOW)
+  firstCheckpointSignedNumber: BigInt
+  lastCheckpointSignedNumber: BigInt
+  lastCheckpointSignedTimestamp: BigInt
+  signatures: [CheckpointSignature!]! @derivedFrom(field: "signerEntity")
+}
+
+type CheckpointSignature {
+  id: ID!                       # `${checkpointNumber}-${signer}`
+  checkpoint: Checkpoint!
+  signerEntity: Signer!
+  signer: String!               # lowercase L1 signer address
+  validatorId: BigInt           # resolved when known
+  checkpointNumber: BigInt!
+  l1Timestamp: BigInt!
+}
+
+# Network-wide slash events. StakingInfo.Slashed(nonce, amount) is aggregate and
+# carries NO validatorId, so it cannot be attributed to a single validator.
+type Slash {
+  id: ID!                       # slash nonce as string
+  nonce: BigInt!
+  amount: BigInt!
+  l1BlockNumber: BigInt!
+  l1Timestamp: BigInt!
+  txHash: String!
+}
+
+# Internal singleton (id = "global"): the working set of recently-active signers,
+# used to increment Signer.checkpointsMissed. Not intended for external querying.
+type ActiveSignerSet {
+  id: ID!
+  signers: [String!]!
+}

@@ -1,0 +1,4 @@
+# pnpm 11 requires build scripts of transitive deps to be explicitly approved.
+# esbuild ships a native binary that Envio's codegen/runtime needs.
+allowBuilds:
+  esbuild: true

@@ -1,0 +1,77 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "signer", "type": "address" },
+      { "indexed": true, "internalType": "uint256", "name": "validatorId", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "nonce", "type": "uint256" },
+      { "indexed": true, "internalType": "uint256", "name": "activationEpoch", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "total", "type": "uint256" },
+      { "indexed": false, "internalType": "bytes", "name": "signerPubkey", "type": "bytes" }
+    ],
+    "name": "Staked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "address", "name": "user", "type": "address" },
+      { "indexed": true, "internalType": "uint256", "name": "validatorId", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "total", "type": "uint256" }
+    ],
+    "name": "Unstaked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "validatorId", "type": "uint256" },
+      { "indexed": true, "internalType": "uint256", "name": "nonce", "type": "uint256" },
+      { "indexed": true, "internalType": "uint256", "name": "newAmount", "type": "uint256" }
+    ],
+    "name": "StakeUpdate",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "validatorId", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "nonce", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "oldSigner", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "newSigner", "type": "address" },
+      { "indexed": false, "internalType": "bytes", "name": "signerPubkey", "type": "bytes" }
+    ],
+    "name": "SignerChange",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "validatorId", "type": "uint256" },
+      { "indexed": true, "internalType": "uint256", "name": "exitEpoch", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "signer", "type": "address" }
+    ],
+    "name": "Jailed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "validatorId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "signer", "type": "address" }
+    ],
+    "name": "UnJailed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "nonce", "type": "uint256" },
+      { "indexed": true, "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "Slashed",
+    "type": "event"
+  }
+]
