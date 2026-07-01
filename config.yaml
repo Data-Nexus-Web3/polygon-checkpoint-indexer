@@ -21,6 +21,12 @@ chains:
     # ~21 days / ~1000 checkpoints of backfill. Checkpoint 105648 lands at L1 block
     # 25,439,723; head at build time ~25,439,970. See README "start_block rationale".
     start_block: 25290000
+    rpc:
+      - url: ${ENVIO_ETHEREUM_MAINNET_HYPERRPC_URL}
+        for: fallback
+      - url: ${ENVIO_ETHEREUM_MAINNET_LIVE_HEAD_RPC_URL}
+        for: realtime
+        ws: ${ENVIO_ETHEREUM_MAINNET_LIVE_HEAD_WS_URL}
     contracts:
       - name: RootChain
         address:
