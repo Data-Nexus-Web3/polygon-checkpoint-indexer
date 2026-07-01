@@ -222,6 +222,17 @@ pnpm dev             # starts Postgres + Hasura + the indexer (needs Docker)
 GraphQL playground: http://localhost:8080 (Hasura). No RPC needed — HyperSync
 serves logs **and** the transaction calldata (`field_selection.transaction_fields: [input]`).
 
+### Container image
+
+[`Dockerfile`](Dockerfile) (node:22-bookworm-slim) builds and runs the indexer —
+this is what the data-nexus `EnvioIndexer` operator builds via kaniko. It exposes
+`8080` (Hasura) and `8081` (health/metrics) and runs `pnpm start`. The Postgres
+connection is supplied by the operator via env at runtime.
+
+```bash
+docker build -t polygon-checkpoint-indexer .
+```
+
 **Validated in this environment** (no Docker available here):
 `pnpm install` ✅, `pnpm codegen` ✅, `tsc --noEmit` ✅ (handlers type-check against
 generated types), and the Tier-2 self-check against checkpoint 105648 ✅ (above).

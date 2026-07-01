@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Envio HyperIndex indexer for Polygon PoS checkpoints + validator signing attribution (Ethereum L1)",
   "private": true,
+  "packageManager": "pnpm@11.9.0",
   "scripts": {
     "codegen": "envio codegen",
     "dev": "envio dev",

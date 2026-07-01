@@ -1,0 +1,8 @@
+node_modules
+generated
+.envio
+build
+.git
+*.log
+logs
+.env
