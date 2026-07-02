@@ -22,6 +22,8 @@ chains:
     # 25,439,723; head at build time ~25,439,970. See README "start_block rationale".
     start_block: 25290000
     rpc:
+      - url: ${ENVIO_ETHEREUM_MAINNET_LIVE_HEAD_RPC_URL}
+        for: sync
       - url: ${ENVIO_ETHEREUM_MAINNET_HYPERRPC_URL}
         for: fallback
       - url: ${ENVIO_ETHEREUM_MAINNET_LIVE_HEAD_RPC_URL}
